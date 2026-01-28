@@ -28,16 +28,14 @@ router.post("/add", async (req, res) => {
     if (!name || !image) {
       return res.status(400).json({ message: "name and image are required" });
     }
-    if (!category || !description) {
-      return res.status(400).json({ message: "category and description are required" });
-    }
 
     let finalVariants = Array.isArray(variants) ? variants : null;
     let finalPrices = Array.isArray(prices) ? prices : null;
 
     if (!finalVariants || !finalPrices) {
-      const sp = smallPrice;
-      const lp = largePrice;
+      const sp = smallPrice ?? (Array.isArray(prices) ? prices[0] : undefined);
+      const lp = largePrice ?? (Array.isArray(prices) ? prices[1] : undefined);
+
       if (sp !== undefined && lp !== undefined) {
         finalVariants = ["Small", "Large"];
         finalPrices = [toNum(sp), toNum(lp)];
@@ -58,7 +56,13 @@ router.post("/add", async (req, res) => {
     }
 
     if (finalPrices.some((p) => toNum(p) <= 0)) {
-      return res.status(400).json({ message: "prices must be valid numbers (> 0)" });
+      return res.status(400).json({
+        message: "prices must be valid numbers (> 0)",
+      });
+    }
+
+    if (!category || !description) {
+      return res.status(400).json({ message: "category and description are required" });
     }
 
     const newCoffee = new Coffee({
@@ -110,9 +114,12 @@ router.put("/:id", async (req, res) => {
     let finalPrices = Array.isArray(prices) ? prices : null;
 
     if (!finalVariants || !finalPrices) {
-      if (smallPrice !== undefined && largePrice !== undefined) {
+      const sp = smallPrice ?? (Array.isArray(prices) ? prices[0] : undefined);
+      const lp = largePrice ?? (Array.isArray(prices) ? prices[1] : undefined);
+
+      if (sp !== undefined && lp !== undefined) {
         finalVariants = ["Small", "Large"];
-        finalPrices = [toNum(smallPrice), toNum(largePrice)];
+        finalPrices = [toNum(sp), toNum(lp)];
       }
     }
 
@@ -155,3 +162,4 @@ router.delete("/:id", async (req, res) => {
 });
 
 module.exports = router;
+

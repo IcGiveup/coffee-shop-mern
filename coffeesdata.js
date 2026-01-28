@@ -1,4 +1,3 @@
-// FIYAZ AHMED
 const coffees = [
   {
     name: "Black Coffee",

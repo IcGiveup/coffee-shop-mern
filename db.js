@@ -1,4 +1,3 @@
-// FIYAZ AHMED
 const mongoose = require('mongoose');
 
 mongoose.set('strictQuery', true);

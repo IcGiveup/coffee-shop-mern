@@ -1,4 +1,3 @@
-// FIYAZ AHMED
 const mongoose = require('mongoose');
 const Coffee = require('./models/coffeeModel');
 const dotenv = require('dotenv');
