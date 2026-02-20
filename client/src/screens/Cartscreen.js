@@ -5,8 +5,7 @@ import { Button, Card, Container, Row, Col, Form } from "react-bootstrap";
 import { addToCart, removeFromCart } from "../actions/cartActions";
 import Checkout from "../components/Checkout";
 import { FaPlus, FaMinus, FaTrash, FaShoppingCart } from "react-icons/fa";
-import { useLocation, useNavigate } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
 export default function Cartscreen() {
   const dispatch = useDispatch();
   const navigate = useNavigate();

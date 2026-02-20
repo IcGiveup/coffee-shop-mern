@@ -33,14 +33,14 @@ export default function CFE({ coffee }) {
       "Coffee brewed cold for hours to produce a smooth, bold flavor.",
   };
 
-  useEffect(() => {
-    if (coffee?.variants?.length) {
-      setVariant(coffee.variants[0]);
-    } else {
-      setVariant("Small");
-    }
-    setQuantity(1);
-  }, [coffee?._id]); 
+useEffect(() => {
+  if (coffee?.variants?.length) {
+    setVariant(coffee.variants[0]);
+  } else {
+    setVariant("Small");
+  }
+  setQuantity(1);
+}, [coffee]); 
 
   if (!coffee || !coffee.name) return <div>No coffee data available</div>;
 

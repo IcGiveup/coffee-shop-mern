@@ -22,8 +22,9 @@ function Success() {
     const vIdx = variants.indexOf(item?.variant);
     const base = vIdx >= 0 ? toNum(prices[vIdx], 0) : 0;
 
-    const offer = toNum(item?.offer, 0); // percent
-    const discounted = offer > 0 ? base - (base * offer) / 100 : base;
+    const offer = toNum(item?.offer, 0);
+    const discounted =
+      offer > 0 ? base - (base * offer) / 100 : base;
 
     return Math.round(discounted * 100) / 100;
   };
@@ -41,10 +42,15 @@ function Success() {
 
     if (!sessionId) return;
 
-    const alreadySaved = sessionStorage.getItem(`order_saved_${sessionId}`);
+    const alreadySaved = sessionStorage.getItem(
+      `order_saved_${sessionId}`
+    );
     if (alreadySaved) return;
 
-    const user = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const user = JSON.parse(
+      localStorage.getItem("currentUser") || "{}"
+    );
+
     if (!user?._id) {
       alert("Please login again.");
       navigate("/login");
@@ -59,13 +65,17 @@ function Success() {
 
     let address = null;
     try {
-      if (addressQ) address = JSON.parse(decodeURIComponent(addressQ));
-      else if (addressLS) address = JSON.parse(addressLS);
+      if (addressQ)
+        address = JSON.parse(decodeURIComponent(addressQ));
+      else if (addressLS)
+        address = JSON.parse(addressLS);
     } catch (e) {
       console.error("Address parse error:", e);
     }
 
-    const totalAmount = toNum(totalAmountQ || totalAmountLS || 0);
+    const totalAmount = toNum(
+      totalAmountQ || totalAmountLS || 0
+    );
 
     let cartItems = [];
     try {
@@ -88,15 +98,16 @@ function Success() {
       const quantity = toNum(item.quantity || 1, 1);
       const offer = toNum(item.offer || 0, 0);
       const unitPrice = getDiscountedUnitPrice(item);
-      const lineTotal = Math.round(unitPrice * quantity * 100) / 100;
+      const lineTotal =
+        Math.round(unitPrice * quantity * 100) / 100;
 
       return {
         name: String(item.name || "").trim(),
         variant: String(item.variant || "").trim(),
         quantity,
         price: unitPrice,
-        lineTotal, 
-        offer, 
+        lineTotal,
+        offer,
       };
     });
 
@@ -106,15 +117,21 @@ function Success() {
       address,
       totalAmount,
       paymentId: sessionId,
-      ...(branchId ? { branchId } : {}), 
+      ...(branchId ? { branchId } : {}),
     };
 
     axios
       .post("/api/orders", orderPayload)
       .then((res) => {
-        sessionStorage.setItem(`order_saved_${sessionId}`, "1");
+        sessionStorage.setItem(
+          `order_saved_${sessionId}`,
+          "1"
+        );
 
-        localStorage.setItem("lastOrder", JSON.stringify(res.data));
+        localStorage.setItem(
+          "lastOrder",
+          JSON.stringify(res.data)
+        );
 
         dispatch(clearCart());
         localStorage.removeItem("cartItems");
@@ -124,55 +141,113 @@ function Success() {
         localStorage.removeItem("checkout_totalAmount");
       })
       .catch((err) => {
-        console.error("Order save error:", err?.response?.data || err.message);
-        alert(err?.response?.data?.message || "Failed to save order");
+        console.error(
+          "Order save error:",
+          err?.response?.data || err.message
+        );
+        alert(
+          err?.response?.data?.message ||
+            "Failed to save order"
+        );
       });
-  }, [location, navigate, dispatch]);
+  }, [location, navigate, dispatch, getDiscountedUnitPrice]);
 
   const generatePDF = (e) => {
     e.preventDefault();
 
-    const order = JSON.parse(localStorage.getItem("lastOrder") || "{}");
+    const order = JSON.parse(
+      localStorage.getItem("lastOrder") || "{}"
+    );
+
     if (!order?._id || !Array.isArray(order.items)) {
       alert("No valid order found to generate receipt.");
       return;
     }
 
-    const { _id, items, totalAmount, address, createdAt, paymentId } = order;
+    const {
+      _id,
+      items,
+      totalAmount,
+      address,
+      createdAt,
+      paymentId,
+    } = order;
 
     const doc = new jsPDF();
+
     doc.setFontSize(18);
-    doc.text("MERN Coffee Ordering System", 105, 15, { align: "center" });
+    doc.text(
+      "MERN Coffee Ordering System",
+      105,
+      15,
+      { align: "center" }
+    );
+
     doc.setFontSize(12);
-    doc.text("Receipt", 105, 23, { align: "center" });
+    doc.text("Receipt", 105, 23, {
+      align: "center",
+    });
 
     doc.setFontSize(11);
     doc.text(`Order ID: ${_id}`, 20, 35);
-    doc.text(`Order Date: ${createdAt ? new Date(createdAt).toLocaleString() : "-"}`, 20, 43);
-    doc.text(`Total Amount: BDT ${toNum(totalAmount, 0)}`, 20, 51);
     doc.text(
-      `Shipping Address: ${address?.street || "-"}, ${address?.city || "-"}${address?.zip ? `, ${address.zip}` : ""}`,
+      `Order Date: ${
+        createdAt
+          ? new Date(createdAt).toLocaleString()
+          : "-"
+      }`,
+      20,
+      43
+    );
+
+    doc.text(
+      `Total Amount: BDT ${toNum(totalAmount, 0)}`,
+      20,
+      51
+    );
+
+    doc.text(
+      `Shipping Address: ${
+        address?.street || "-"
+      }, ${address?.city || "-"}${
+        address?.zip ? `, ${address.zip}` : ""
+      }`,
       20,
       59
     );
-    doc.text(`Payment ID: ${paymentId || "-"}`, 20, 67);
+
+    doc.text(
+      `Payment ID: ${paymentId || "-"}`,
+      20,
+      67
+    );
 
     let y = 80;
+
     doc.setFontSize(12);
     doc.text("Items:", 20, y);
     y += 8;
 
     doc.setFontSize(10);
+
     items.forEach((it, idx) => {
       const qty = toNum(it.quantity, 0);
       const unit = toNum(it.price, 0);
-      const line = toNum(it.lineTotal, unit * qty);
+      const line = toNum(
+        it.lineTotal,
+        unit * qty
+      );
 
       doc.text(
-        `${idx + 1}. ${String(it.name || "-")} (${String(it.variant || "-")}) x${qty}  |  Unit: ${unit}  |  Total: ${line}`,
+        `${idx + 1}. ${String(
+          it.name || "-"
+        )} (${String(
+          it.variant || "-"
+        )}) x${qty}  |  Unit: ${unit}  |  Total: ${line}`,
         20,
         y
       );
+
       y += 7;
 
       if (y > 280) {
@@ -187,13 +262,22 @@ function Success() {
   return (
     <div className="container mt-5">
       <h2>Order Successful</h2>
-      <p>Your coffee order has been placed successfully!</p>
+      <p>
+        Your coffee order has been placed
+        successfully!
+      </p>
 
-      <button className="btn btn-success" onClick={() => navigate("/orders")}>
+      <button
+        className="btn btn-success"
+        onClick={() => navigate("/orders")}
+      >
         Go to Orders
       </button>
 
-      <button className="btn btn-primary ms-2" onClick={generatePDF}>
+      <button
+        className="btn btn-primary ms-2"
+        onClick={generatePDF}
+      >
         View Receipt (PDF)
       </button>
     </div>

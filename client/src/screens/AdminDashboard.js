@@ -1,5 +1,5 @@
 // FIYAZ AHMED
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import axios from "axios";
 
 const emptyForm = {
@@ -36,21 +36,21 @@ export default function AdminDashboard() {
     [branches, branchId]
   );
 
-  const fetchBranches = async () => {
-    try {
-      const { data } = await axios.get("/api/admin/branches");
-      const list = Array.isArray(data) ? data : [];
-      setBranches(list);
+const fetchBranches = useCallback(async () => {
+  try {
+    const { data } = await axios.get("/api/admin/branches");
+    const list = Array.isArray(data) ? data : [];
+    setBranches(list);
 
-      if (!branchId && list.length > 0) {
-        setBranchId(list[0]._id);
-        localStorage.setItem("adminSelectedBranchId", list[0]._id);
-      }
-    } catch (e) {
-      console.error("Fetch branches error:", e?.response?.data || e.message);
-      setBranches([]);
+    if (!branchId && list.length > 0) {
+      setBranchId(list[0]._id);
+      localStorage.setItem("adminSelectedBranchId", list[0]._id);
     }
-  };
+  } catch (e) {
+    console.error("Fetch branches error:", e?.response?.data || e.message);
+    setBranches([]);
+  }
+}, [branchId]);
 
   const fetchCoffees = async () => {
     try {
@@ -73,10 +73,10 @@ export default function AdminDashboard() {
     }
   };
 
-  useEffect(() => {
-    fetchBranches();
-    fetchCoffees();
-  }, []);
+useEffect(() => {
+  fetchBranches();
+  fetchCoffees();
+}, [fetchBranches]);
 
   useEffect(() => {
     if (!branchId) return;

@@ -16,23 +16,23 @@ export default function Homepage() {
   const [branches, setBranches] = useState([]);
   const [branchId, setBranchId] = useState(localStorage.getItem("selectedBranchId") || "");
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await axios.get("/api/branches");
-        setBranches(Array.isArray(data) ? data : []);
+useEffect(() => {
+  (async () => {
+    try {
+      const { data } = await axios.get("/api/branches");
+      setBranches(Array.isArray(data) ? data : []);
 
-        if (!branchId && Array.isArray(data) && data.length > 0) {
-          const first = data[0]._id;
-          setBranchId(first);
-          localStorage.setItem("selectedBranchId", first);
-        }
-      } catch (e) {
-        console.error("Failed to load branches:", e?.response?.data || e.message);
-        setBranches([]);
+      if (!branchId && Array.isArray(data) && data.length > 0) {
+        const first = data[0]._id;
+        setBranchId(first);
+        localStorage.setItem("selectedBranchId", first);
       }
-    })();
-  }, []);
+    } catch (e) {
+      console.error("Failed to load branches:", e?.response?.data || e.message);
+      setBranches([]);
+    }
+  })();
+}, [branchId]);
 
   useEffect(() => {
     if (!branchId) return;
