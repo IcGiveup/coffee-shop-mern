@@ -1,7 +1,7 @@
 // FIYAZ AHMED
+import API from "../api";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
 import { fetchCoffees } from "../actions/userActions";
 import CFE from "../components/CFE";
 import Loading from "../components/Loading";
@@ -14,26 +14,32 @@ export default function Homepage() {
   const { coffees, loading, error } = coffeeState;
 
   const [branches, setBranches] = useState([]);
-  const [branchId, setBranchId] = useState(localStorage.getItem("selectedBranchId") || "");
+  const [branchId, setBranchId] = useState(
+    localStorage.getItem("selectedBranchId") || ""
+  );
 
-useEffect(() => {
-  (async () => {
-    try {
-      const { data } = await axios.get("/api/branches");
-      setBranches(Array.isArray(data) ? data : []);
+  // ✅ Load branches once
+  useEffect(() => {
+    const loadBranches = async () => {
+      try {
+        const { data } = await API.get("/api/branches");
+        setBranches(Array.isArray(data) ? data : []);
 
-      if (!branchId && Array.isArray(data) && data.length > 0) {
-        const first = data[0]._id;
-        setBranchId(first);
-        localStorage.setItem("selectedBranchId", first);
+        if (!branchId && data.length > 0) {
+          const first = data[0]._id;
+          setBranchId(first);
+          localStorage.setItem("selectedBranchId", first);
+        }
+      } catch (e) {
+        console.error("Failed to load branches:", e);
+        setBranches([]);
       }
-    } catch (e) {
-      console.error("Failed to load branches:", e?.response?.data || e.message);
-      setBranches([]);
-    }
-  })();
-}, [branchId]);
+    };
 
+    loadBranches();
+  }, []); // only once
+
+  // ✅ Fetch coffees when branch changes
   useEffect(() => {
     if (!branchId) return;
     dispatch(fetchCoffees(branchId));
@@ -50,8 +56,14 @@ useEffect(() => {
       <div className="d-flex justify-content-end mb-3">
         <div style={{ minWidth: 280 }}>
           <label className="form-label fw-bold">Select Branch</label>
-          <select className="form-select" value={branchId} onChange={onBranchChange}>
-            {branches.length === 0 && <option value="">No branches available</option>}
+          <select
+            className="form-select"
+            value={branchId}
+            onChange={onBranchChange}
+          >
+            {branches.length === 0 && (
+              <option value="">No branches available</option>
+            )}
             {branches.map((b) => (
               <option key={b._id} value={b._id}>
                 {b.name}
@@ -72,7 +84,11 @@ useEffect(() => {
             </div>
           ))
         ) : (
-          !loading && <p className="text-center">No coffees available for this branch.</p>
+          !loading && (
+            <p className="text-center">
+              No coffees available for this branch.
+            </p>
+          )
         )}
       </div>
     </div>
