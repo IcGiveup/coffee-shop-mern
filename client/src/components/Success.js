@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { jsPDF } from "jspdf";
@@ -15,7 +15,8 @@ function Success() {
     return Number.isFinite(n) ? n : def;
   };
 
-  const getDiscountedUnitPrice = (item) => {
+  // ✅ Wrapped in useCallback to prevent dependency warning
+  const getDiscountedUnitPrice = useCallback((item) => {
     const variants = Array.isArray(item?.variants) ? item.variants : [];
     const prices = Array.isArray(item?.prices) ? item.prices : [];
 
@@ -27,7 +28,7 @@ function Success() {
       offer > 0 ? base - (base * offer) / 100 : base;
 
     return Math.round(discounted * 100) / 100;
-  };
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -135,7 +136,6 @@ function Success() {
 
         dispatch(clearCart());
         localStorage.removeItem("cartItems");
-
         localStorage.removeItem("checkout_cartItems");
         localStorage.removeItem("checkout_address");
         localStorage.removeItem("checkout_totalAmount");
@@ -233,10 +233,7 @@ function Success() {
     items.forEach((it, idx) => {
       const qty = toNum(it.quantity, 0);
       const unit = toNum(it.price, 0);
-      const line = toNum(
-        it.lineTotal,
-        unit * qty
-      );
+      const line = toNum(it.lineTotal, unit * qty);
 
       doc.text(
         `${idx + 1}. ${String(
@@ -262,10 +259,7 @@ function Success() {
   return (
     <div className="container mt-5">
       <h2>Order Successful</h2>
-      <p>
-        Your coffee order has been placed
-        successfully!
-      </p>
+      <p>Your coffee order has been placed successfully!</p>
 
       <button
         className="btn btn-success"
