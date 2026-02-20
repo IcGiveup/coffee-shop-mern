@@ -12,7 +12,7 @@ const branchRoutes = require("./routes/branchRoutes");
 const adminBranchRoutes = require("./routes/adminBranchRoutes");
 const adminInventoryRoutes = require("./routes/adminInventoryRoutes");
 
-const Order = require("./models/OrderModel");
+const Order = require("./models/orderModel");
 const Coffee = require("./models/coffeeModel");
 const CoffeeBranch = require("./models/CoffeeBranchModel");
 
