@@ -18,17 +18,18 @@ export default function Homepage() {
     localStorage.getItem("selectedBranchId") || ""
   );
 
-  // ✅ Load branches once
+  // ✅ Load branches once (no branchId inside)
   useEffect(() => {
     const loadBranches = async () => {
       try {
         const { data } = await API.get("/api/branches");
-        setBranches(Array.isArray(data) ? data : []);
+        const branchList = Array.isArray(data) ? data : [];
+        setBranches(branchList);
 
-        if (!branchId && data.length > 0) {
-          const first = data[0]._id;
-          setBranchId(first);
+        if (!localStorage.getItem("selectedBranchId") && branchList.length > 0) {
+          const first = branchList[0]._id;
           localStorage.setItem("selectedBranchId", first);
+          setBranchId(first);
         }
       } catch (e) {
         console.error("Failed to load branches:", e);
@@ -37,7 +38,7 @@ export default function Homepage() {
     };
 
     loadBranches();
-  }, []); // only once
+  }, []); // ✅ now clean
 
   // ✅ Fetch coffees when branch changes
   useEffect(() => {
