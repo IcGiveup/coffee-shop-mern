@@ -216,7 +216,7 @@ export default function Cartscreen() {
                         className="d-flex align-items-center"
                         style={{ borderRadius: "5px", padding: "8px 15px" }}
                       >
-                        <FaTrash className="me-1" /> ADD
+                        <FaTrash className="me-1" /> Remove
                       </Button>
                     </Col>
                   </Row>
