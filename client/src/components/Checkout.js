@@ -1,14 +1,21 @@
 import React from "react";
-import axios from "axios";
 import { Button } from "react-bootstrap";
+import API from "../api";
 
-export default function Checkout({ cartItems, address, totalAmount, isAddressValid }) {
+export default function Checkout({
+  cartItems,
+  address,
+  totalAmount,
+  isAddressValid,
+}) {
+
   const handleCheckout = async () => {
     try {
       if (!isAddressValid) {
         alert("⚠️ Please fill shipping address (street + city).");
         return;
       }
+
       if (!cartItems || cartItems.length === 0) {
         alert("⚠️ Cart is empty.");
         return;
@@ -21,12 +28,14 @@ export default function Checkout({ cartItems, address, totalAmount, isAddressVal
       localStorage.setItem("checkout_totalAmount", String(totalAmount));
       localStorage.setItem("checkout_branchId", branchId);
 
-      const { data } = await axios.post("/create-checkout-session", {
+      const response = await API.post("/api/create-checkout-session", {
         items: cartItems,
         address,
         totalAmount,
         branchId,
       });
+
+      const data = response.data;
 
       if (data?.url) {
         window.location.href = data.url;
@@ -34,6 +43,7 @@ export default function Checkout({ cartItems, address, totalAmount, isAddressVal
         console.log("Checkout response:", data);
         alert("❌ Checkout failed: No Stripe URL returned.");
       }
+
     } catch (err) {
       console.error("Checkout error:", err);
       const msg =
